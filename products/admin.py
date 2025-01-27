@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Brand, ProductFeature, ProductGroup, Product, Feature
+from .models import Brand, FeatureValue, ProductFeature, ProductGroup, Product, Feature
 from django.db.models.aggregates import Count
 from django_admin_listfilter_dropdown.filters import DropdownFilter
 
@@ -80,12 +80,27 @@ class ProductAdmin(admin.ModelAdmin):
         return group_titles
     
 #==========================================================================
+class FeatureValueInLine(admin.TabularInline):
+    model = FeatureValue
+    extra =3
 class FeatureAdmin(admin.ModelAdmin):
-    list_display = ('feature_name',)
+    list_display = ('feature_name', 'display_group', 'display_feature_values')
     list_filter = ('feature_name',)
     search_field = ('feature_name',)
     ordering = ('feature_name',)
-
+    inlines = [FeatureValueInLine]
+    
+    def formfield_for_manytomany(self,db_field, request, **kwargs):
+        if db_field.name == "Product_group":
+            kwargs['queryset'] = ProductGroup.objects.filter(Q(group_parent=None))
+            
+        return super().formfield_for_manytomany(db_field, request,**kwargs)
+    
+    def display_group(self,obj):
+        return ', '.join([group.group_title for group in obj.product_group.all()])
+    
+    def display_feature_values(self,obj):
+        return ', '.join([feature_value.value_title for feature_value in obj.feature_values.all()])
 
 admin.site.register(Brand,BrandAdmin)
 admin.site.register(ProductGroup,ProductGroupAdmin)

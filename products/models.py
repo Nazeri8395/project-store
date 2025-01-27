@@ -37,13 +37,20 @@ class Product(models.Model):
     image_name = models.ImageField(upload_to=file_upload.upload_to)
     price = models.PositiveBigIntegerField(default=0)
     product_group = models.ManyToManyField(ProductGroup, related_name="product_of_groups")
-    brand = models.ForeignKey(Brand, on_delete=models.CASCADE,null=True, related_name='brands_of_groups')
+    brand = models.ForeignKey(Brand, on_delete=models.CASCADE,null=True, related_name='product_of_brand')
     is_active = models.BooleanField(default=True)
     register_date = models.DateTimeField(auto_now=True)
     published_date = models.DateTimeField(default=timezone.now)
     
     def __str__(self):
         return self.product_name
+
+class FeatureValue(models.Model):
+    value_title = models.CharField(max_length=100)
+    feature = models.ForeignKey(Feature, on_delete=models.CASCADE, blank=True, null=True, related_name="feature_values")
+    
+    def __str__(self):
+        return f"{self.id}-{self.value_title}"
 
 class ProductFeature(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
