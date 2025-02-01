@@ -1,17 +1,19 @@
 from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
-
+from rest_framework.response import Response
+from rest_framework import status
 from cart.models import Cart, CartItem
-from cart.serializers import AddCartItemSerializer, AddCartSerializer, CartItemSerializer, CartSerializer, UpdateCartItemSerializer, UpdateCartSerializer
+from cart.serializers import (AddCartItemSerializer, AddCartSerializer,
+                              CartItemSerializer, CartSerializer, 
+                              UpdateCartItemSerializer, UpdateCartSerializer)
 
 from drf_yasg.utils import swagger_auto_schema
 
 class CartViewSet(ModelViewSet):
-    # محدود کردن متدهای قابل دسترس (حذف PUT و PATCH)
+
     http_method_names = ['get', 'post', 'delete']
 
     def get_queryset(self):
-        # فقط گرفتن سبد خرید‌ها
         return Cart.objects.prefetch_related('items__product').all()
 
     def get_serializer_class(self):
@@ -21,20 +23,19 @@ class CartViewSet(ModelViewSet):
             return UpdateCartSerializer
         return CartSerializer
 
-    # @swagger_auto_schema(method='get', responses={200: CartSerializer})
     def list(self, request, *args, **kwargs):
-        # نمایش لیست سبد خریدها
         return super().list(request, *args, **kwargs)
 
-    # @swagger_auto_schema(method='post', responses={201: CreateCartSerializer})
     def create(self, request, *args, **kwargs):
-        # ایجاد یک سبد خرید جدید
         return super().create(request, *args, **kwargs)
 
-    # @swagger_auto_schema(method='delete', responses={204: 'No Content'})
     def destroy(self, request, *args, **kwargs):
-        """ کاملاً حذف کردن یک سبد خرید """
         cart = self.get_object()
+        if cart.items.count() > 0:
+            return Response(
+                {'error':'There is some product including this cart.'}, 
+                status=status.HTTP_405_METHOD_NOT_ALLOWED
+            )
         cart.delete()
         return Response({'message': 'Shopping cart deleted.'}, status=status.HTTP_204_NO_CONTENT)
     

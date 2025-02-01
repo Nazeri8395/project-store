@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from products.models import Product
 from .models import Cart, CartItem
-# from django.http import get
+
 class CartProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
