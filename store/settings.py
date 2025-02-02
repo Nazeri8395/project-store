@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'accounts',
     'products',
     'cart',
+    'comments',
     
 ]
 
@@ -85,7 +86,12 @@ WSGI_APPLICATION = "store.wsgi.application"
 
 
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    
 }
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
