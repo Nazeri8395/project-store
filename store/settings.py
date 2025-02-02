@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     
     'rest_framework',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
     'django_admin_listfilter_dropdown',    
 
     #local app
@@ -83,7 +85,7 @@ WSGI_APPLICATION = "store.wsgi.application"
 
 
 REST_FRAMEWORK = {
-    'COERCE_DECIMAL_TO_STRING' : False,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases

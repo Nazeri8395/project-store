@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
@@ -7,12 +7,31 @@ from cart.serializers import (AddCartItemSerializer, AddCartSerializer,
                               CartItemSerializer, CartSerializer, 
                               UpdateCartItemSerializer, UpdateCartSerializer)
 
-from drf_yasg.utils import swagger_auto_schema
-
+@extend_schema_view(
+    list=extend_schema(
+        summary="Get shopping cart list",
+        description="This API returns a list of existing shopping carts..",
+        responses={200: CartSerializer}
+    ),
+    create=extend_schema(
+        summary="Create a new shopping cart",
+        description="Creates a new shopping cart and returns its ID..",
+        request=AddCartSerializer,
+        responses={201: CartSerializer}
+    ),
+    destroy=extend_schema(
+        summary="Delete a shopping cart",
+        description="Deletes a shopping cart if it contains no items..",
+        responses={
+            204: {"description": "Shopping cart deleted."},
+            405: {"description": "There is some product including this cart."}
+        }
+    ),
+)
 class CartViewSet(ModelViewSet):
 
     http_method_names = ['get', 'post', 'delete']
-
+    
     def get_queryset(self):
         return Cart.objects.prefetch_related('items__product').all()
 
@@ -39,6 +58,30 @@ class CartViewSet(ModelViewSet):
         cart.delete()
         return Response({'message': 'Shopping cart deleted.'}, status=status.HTTP_204_NO_CONTENT)
     
+@extend_schema_view(
+    list=extend_schema(
+        summary="Get items from a shopping cart",
+        description="Returns the list of items in a specific shopping cart..",
+        responses={200: CartItemSerializer}
+    ),
+    create=extend_schema(
+        summary="Add a product to cart",
+        description="Adds a new product to the cart..",
+        request=AddCartItemSerializer,
+        responses={201: CartItemSerializer}
+    ),
+    partial_update=extend_schema(
+        summary="Edit the quantity of an item in the shopping cart",
+        description="Changes the quantity of a specific product in the shopping cart..",
+        request=UpdateCartItemSerializer,
+        responses={200: CartItemSerializer}
+    ),
+    destroy=extend_schema(
+        summary="Remove an item from the cart",
+        description="Removes a product from the cart..",
+        responses={204: {"description": "Item deleted successfully"}}
+    ),
+)
 class CartItemViewSet(ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
         

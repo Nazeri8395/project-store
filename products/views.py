@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -7,6 +8,11 @@ from django.db.models import Q, Count, Min, Max
 from django.shortcuts import get_object_or_404
 
 #---------------------  cheapest products  ------------------------------
+@extend_schema(
+    summary="Get the cheapest products",
+    description="This API returns the cheapest active products.",
+    responses={200: ProductSerializer}
+)
 class CheapProductsView(APIView):
     def get(self, request):
         products = Product.objects.filter(is_active=True).order_by('price')[:3]
@@ -14,6 +20,11 @@ class CheapProductsView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 #---------------------  Latest products  ------------------------------
+@extend_schema(
+    summary="Get the latest products",
+    description="This API returns the most recent active products.",
+    responses={200: ProductSerializer}
+)
 class LastProductsView(APIView):
     def get(self, request):
         products = Product.objects.filter(is_active=True).order_by('-published_date')[:3]
@@ -21,6 +32,11 @@ class LastProductsView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 #---------------------  Popular categories  ------------------------------
+@extend_schema(
+    summary="Get popular product categories",
+    description="This API returns the most popular product groups.",
+    responses={200: ProductGroupSerializer}
+)
 class PopularProductsGroupView(APIView):
     def get(self, request):
         product_groups = ProductGroup.objects.filter(Q(is_active=True)).annotate(count=Count("product_of_groups")).order_by('-count')[:1]
@@ -28,6 +44,14 @@ class PopularProductsGroupView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 #---------------------  Product details  ------------------------------
+@extend_schema(
+    summary="Get product details",
+    description="This API returns complete information about a specific product..",
+    responses={
+        200: ProductSerializer,
+        404: {"description": "این کالا غیرفعال است."}
+    }
+)
 class ProductDetailsView(APIView):
     def get(self,request, pk):
         product= get_object_or_404(Product,pk=pk)
@@ -38,6 +62,11 @@ class ProductDetailsView(APIView):
                 status=status.HTTP_404_NOT_FOUND)
 
 #--------------------  Related products  -----------------------------
+@extend_schema(
+    summary="Get related products",
+    description="This API returns products related to the selected product..",
+    responses={200: ProductSerializer}
+)
 class RelatedProducts(APIView):
     def get(self, request, *args, **kwargs):
         pk = kwargs.get('pk') 
@@ -53,6 +82,11 @@ class RelatedProducts(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 #--------------------  List of all product groups  -----------------------------
+@extend_schema(
+    summary="Get a list of all product groups",
+    description="This API returns a list of all active product groups..",
+    responses={200: ProductGroupSerializer}
+)
 class ProductGroupsView(APIView):
     def get(self, request, *args, **kwargs):
         product_groups = ProductGroup.objects.filter(Q(is_active=True)).annotate(count=Count("products"))
@@ -61,6 +95,11 @@ class ProductGroupsView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 #--------------------  List of products for each group  -----------------------------
+@extend_schema(
+    summary="Receive products from the selected group",
+    description="This API returns products of a specific group along with price analysis..",
+    responses={200: ProductSerializer}
+)
 class ProductByGroupView(APIView):
     def get(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
@@ -75,6 +114,11 @@ class ProductByGroupView(APIView):
         }, status=status.HTTP_200_OK)
 
 #--------------------  Popular categories  -----------------------------
+@extend_schema(
+    summary="Get best-selling categories",
+    description="This API returns the best-selling product categories..",
+    responses={200: ProductGroupSerializer}
+)
 class PopularGroup(APIView):
     def get(self, request):
         product_group = ProductGroup.objects.annotate(count= Count("product_of_groups")).filter(
@@ -84,6 +128,11 @@ class PopularGroup(APIView):
     
     
 #--------------------  List of brands for filters  -----------------------------
+@extend_schema(
+    summary="Get product brands for filters",
+    description="This API returns a list of active product brands for the selected group.",
+    responses={200: BrandSerializer}
+)
 class BrandsView(APIView):
     def get(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
