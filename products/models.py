@@ -54,6 +54,10 @@ class Product(models.Model):
         avg_score = self.scores.aggregate(Avg("score"))["score__avg"]
         return float(avg_score) if avg_score is not None else 0.0
     
+    def is_favorited_by(self, user):
+        """Checking whether the product is the user's favorite or not"""
+        return self.favorite_product.filter(favorite_user=user).exists()
+
     def __str__(self):
         return self.product_name
 

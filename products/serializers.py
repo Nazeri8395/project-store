@@ -4,22 +4,30 @@ from .models import Brand, Feature, FeatureValue, Product, ProductGroup
 class ProductSerializer(serializers.ModelSerializer):
     user_score = serializers.SerializerMethodField()
     average_score = serializers.SerializerMethodField()
+    is_favorite = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ["id", "product_name", "description", "price", "is_active", "user_score", "average_score"]
+        fields = ["id", "product_name", "description", "price", "is_active", "user_score", "average_score", "is_favorite"]
 
     def get_user_score(self, obj):
-        """دریافت امتیاز کاربر لاگین‌شده از مدل"""
+        """Get logged in user score from model"""
         request = self.context.get("request")
         if request and request.user.is_authenticated:
             return obj.get_user_score(request.user)
         return None
 
     def get_average_score(self, obj):
-        """دریافت میانگین امتیازات محصول از مدل"""
+        """Get average product scores from model"""
         return obj.get_average_score()
-        
+
+    def get_is_favorite(self, obj):
+        """Check if the user has added this product to favorites"""
+        request = self.context.get("request")
+        if request and request.user.is_authenticated:
+            return obj.is_favorited_by(request.user)
+        return False
+    
 class ProductGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductGroup
