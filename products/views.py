@@ -49,17 +49,21 @@ class PopularProductsGroupView(APIView):
     description="This API returns complete information about a specific product..",
     responses={
         200: ProductSerializer,
-        404: {"description": "این کالا غیرفعال است."}
+        404: {"description": "This item is inactive."}
     }
 )
 class ProductDetailsView(APIView):
     def get(self,request, pk):
         product= get_object_or_404(Product,pk=pk)
+        
         if product.is_active:
-            serializer = ProductSerializer(product)
+            serializer = ProductSerializer(product, context={"request": request})
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response({"error": "این کالا غیرفعال است."}, 
-                status=status.HTTP_404_NOT_FOUND)
+        
+        return Response(
+                    {"error": "This item is inactive."}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
 
 #--------------------  Related products  -----------------------------
 @extend_schema(

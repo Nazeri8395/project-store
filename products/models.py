@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 from products.utils import FileUpload
+from django.contrib.auth import get_user_model
+from django.db.models import Avg
 
 class Brand(models.Model):
     brand_title = models.CharField( max_length=100)
@@ -29,7 +31,7 @@ class Feature(models.Model):
     
     def __str__(self):
         return self.feature_name
-    
+
 class Product(models.Model):
     product_name = models.CharField(max_length=100)
     description = models.TextField(blank=True,null=True)
@@ -41,6 +43,16 @@ class Product(models.Model):
     is_active = models.BooleanField(default=True)
     register_date = models.DateTimeField(auto_now=True)
     published_date = models.DateTimeField(default=timezone.now)
+    
+    def get_user_score(self, user):
+        """Get the specified user rating for this product"""
+        score = self.scores.filter(user=user).first()
+        return score.score if score else 0
+
+    def get_average_score(self):
+        """Get average product ratings"""
+        avg_score = self.scores.aggregate(Avg("score"))["score__avg"]
+        return float(avg_score) if avg_score is not None else 0.0
     
     def __str__(self):
         return self.product_name

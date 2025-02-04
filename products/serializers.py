@@ -2,9 +2,23 @@ from rest_framework import serializers
 from .models import Brand, Feature, FeatureValue, Product, ProductGroup
 
 class ProductSerializer(serializers.ModelSerializer):
+    user_score = serializers.SerializerMethodField()
+    average_score = serializers.SerializerMethodField()
+
     class Meta:
         model = Product
-        fields = ['product_name', 'description', 'image_name', 'price', 'product_group', 'brand', 'is_active', ] 
+        fields = ["id", "product_name", "description", "price", "is_active", "user_score", "average_score"]
+
+    def get_user_score(self, obj):
+        """دریافت امتیاز کاربر لاگین‌شده از مدل"""
+        request = self.context.get("request")
+        if request and request.user.is_authenticated:
+            return obj.get_user_score(request.user)
+        return None
+
+    def get_average_score(self, obj):
+        """دریافت میانگین امتیازات محصول از مدل"""
+        return obj.get_average_score()
         
 class ProductGroupSerializer(serializers.ModelSerializer):
     class Meta:
