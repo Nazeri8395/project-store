@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'scors',
     'favorites',
     'search',
+    'compare',
     
 ]
 

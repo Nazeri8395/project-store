@@ -31,6 +31,7 @@ urlpatterns = [
     path("scors/", include('scors.urls')),
     path("favorites/", include('favorites.urls')),
     path("search/", include('search.urls')),
+    path("compare/", include('compare.urls')),
    
     # swagger
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
